@@ -17,7 +17,7 @@ class UserDefault implements UserService {
     findById(id: number): Promise<User | null> {
         return this.rp.findById(id);
     }
-    update(id: number, user: User): Promise<User>  | Promise<null>{
+    update(id: number, user: User): Promise<User | null>{
         return this.rp.update(id, user);
     }
     findAll(): Promise<User[]> {

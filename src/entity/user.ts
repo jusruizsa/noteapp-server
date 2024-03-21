@@ -21,7 +21,7 @@ interface UserRepository {
     findByEmail(email: string): Promise<User | null>;
     findById(id: number): Promise<User | null>;
     findAll(): Promise<User[]>;
-    update(id: number, user: User): Promise<User> | Promise<null>;
+    update(id: number, user: User): Promise<User | null>;
     delete(id: number): Promise<boolean>;
 }
 
@@ -30,7 +30,7 @@ interface UserService {
     findByEmail(email: string): Promise<User | null>;
     findById(id: number): Promise<User | null>;
     findAll(): Promise<User[]>;
-    update(id: number, user: User): Promise<User> | Promise<null>;
+    update(id: number, user: User): Promise<User | null>;
     delete(id: number): Promise<boolean>;
 }
 

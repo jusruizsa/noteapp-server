@@ -46,6 +46,15 @@ class UserHandler {
         
     }
 
+    public async getUserByEmail(req: Request, res: Response) {
+        this.sv.findByEmail(req.params.email).then((user) => {
+            res.send(user);
+        }
+        ).catch((error) => {
+            res.send(error);
+        });
+    }
+
     public async updateUser(req: Request, res: Response) {
         this.sv.update(parseInt(req.params.id), req.body).then((user) => {
             res.send(user);

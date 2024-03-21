@@ -22,6 +22,10 @@ usersRouter.get('/:id', (req: Request, res: Response) => {
     handler.getUser(req, res);
 });
 
+usersRouter.get('/email/:email', (req: Request, res: Response) => {
+    handler.getUserByEmail(req, res);
+});
+
 usersRouter.patch('/:id', (req: Request, res: Response) => {
     handler.updateUser(req, res);
 });

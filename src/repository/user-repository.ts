@@ -1,68 +1,63 @@
-import users from "../../db/user-db";
 import { User, UserRepository } from "../entity/user";
+import mysql, { ResultSetHeader, RowDataPacket } from 'mysql2/promise';
+import conn from "../../db/conn";
 
 class UserMySql implements UserRepository {
-    save(user: User): Promise<User> {
-        users.push(user);
+    async save(user: User): Promise<User> {
+        user.createdAt = new Date();
+        user.updatedAt = new Date();
+        const result = await conn.query<ResultSetHeader>('INSERT INTO users (name, email, password, created_at, updated_at) VALUES (?, ?, ?, ?, ?)', [user.name, user.email, user.password, user.createdAt, user.updatedAt]);
+        user.id = result[0].insertId;
         return Promise.resolve(user);
     }
-    findByEmail(email: string): Promise<User | null> {
-        const u = users.find((user) => user.email === email);
-        if (u) {
-            return Promise.resolve({
-                id: u.id,
-                name: u.name,
-                email: u.email,
-                password: u.password,
-                createdAt: u.createdAt,
-                updatedAt: u.updatedAt
-            });
+    async findByEmail(email: string): Promise<User | null> {
+        const [result, _] = await conn.query<RowDataPacket[]>('SELECT * FROM users WHERE email = ?', [email]);
+        if (result.length === 0) {
+            return null;
         }
-        return Promise.resolve(null);
+        const user = result[0];
+        return Promise.resolve(user as User);
+
+
     }
-    findById(id: number): Promise<User | null> {
-        const u = users.find((user) => user.id === id);
-        if (u) {
-            return Promise.resolve({
-                id: u.id,
-                name: u.name,
-                email: u.email,
-                password: u.password,
-                createdAt: u.createdAt,
-                updatedAt: u.updatedAt
-            });
+    async findById(id: number): Promise<User | null> {
+        const [result, _] = await conn.query<RowDataPacket[]>('SELECT * FROM users WHERE id = ?', [id]);
+        if (result.length === 0) {
+            return null;
         }
-        return Promise.resolve(null);
+        const user = result[0];
+        return Promise.resolve(user as User);
     }
-    findAll(): Promise<User[]> {
-        const u = users.map((user) => {
-            return {
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                password: user.password,
-                createdAt: user.createdAt,
-                updatedAt: user.updatedAt
-            }
+
+    async findAll(): Promise<User[]> {
+        const users: User[] = [];
+        const [result, _] = await conn.query<RowDataPacket[]>('SELECT * FROM users');
+        for (const row of result) {
+            users.push(row as User);
         }
-        )
-        return Promise.resolve(u);
+        return Promise.resolve(users);
     }
-    update(id: number, user: User): Promise<User> | Promise<null>{
-        const index = users.findIndex((user) => user.id === id);
-        if (index > -1) {
-            users[index] = user;
-            return Promise.resolve(user);
+    async update(id: number, user: User): Promise<User | null>{
+        const findUser = await this.findById(id);
+        if (!findUser) {
+            return Promise.resolve(null);
         }
-        return Promise.resolve(null);
+        Object.assign(user, findUser);
+        user.updatedAt = new Date();
+        conn.query('UPDATE users SET name = ?, email = ?, password = ?, updated_at = ? WHERE id = ?', [user.name, user.email, user.password, user.updatedAt, id]);
+        return Promise.resolve(user);
+
+            
     }
-    delete(id: number): Promise<boolean> {
-        const index = users.findIndex((user) => user.id === id);
-        if (index > -1) {
-            users.splice(index, 1);
-            return Promise.resolve(true);
+    async delete(id: number): Promise<boolean> {
+        const result = await conn.query<ResultSetHeader>('DELETE FROM users WHERE id = ?', [id]);
+        
+        //validate rows affected
+        if (result[0].affectedRows === 0) {
+            return Promise.resolve(false);
         }
-        return Promise.resolve(false);
+        return Promise.resolve(true);
+
     }
 }
 
