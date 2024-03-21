@@ -1,5 +1,4 @@
 import { Note, NoteRepository } from "../entity/note";
-import notes from "../../db/note-db";
 import conn from "../../db/conn";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 
@@ -55,7 +54,7 @@ class NoteMysql implements NoteRepository {
         if (!findNote) {
             return Promise.resolve(null);
         }
-        Object.assign(findNote, note);
+        Object.assign(note, findNote);
         note.updated_at = new Date();
         const result = conn.query<ResultSetHeader>("UPDATE notes SET title = ?, content = ?, updated_at = ? WHERE id = ?", [note.title, note.content, note.updated_at, id]);
         return Promise.resolve(note);
